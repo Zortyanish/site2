@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>minemob</title>
+    <link  rel="stylesheet" href="body{.css" />
+</head>
+<body>
+     <div class="leftmenu">
+        <a href="1to100.html"><button class="button-87" role="button">1 to 100</button></a>
+        <a href="12.html"><button class="button-87" role="button">Місяці року</button></a>
+        <a href="bakomat.html"><button class="button-87" role="button">bankomat</button></a>
+        <a href="compliments.html"><button class="button-87" role="button">compliments</button></a>
+        <a href="login.html"><button class="button-here" role="button">whats your name</button></a>
+        <a href="stiker.html"><button class="button-87" role="button">stikers</button></a>
+    </div>
+    <div class="content">
+        <a href="index.html">
+        <button class="button-85" role="button" >back</button></a><br />
+        <h2>введи живе створріння с майнкрафт і я скажу його группу. Пиши з великої букви</h2>
+        <br />
+        <form name="form1" action="javascript:skoko()">
+            <input type="text" name="skoko" placeholder="Наприклад Зомбі" style="width: 200px;">
+            <button class="button-85" role="button" >GO</button></a>
+        </form>
+        <div id="result"></div>
+        <script>
+            function skoko(){
+                let result = document.getElementById("result");
+
+                let minemob = document.form1.skoko.value;
+
+switch (minemob) {
+    case 'Іфрит':
+    case 'Кріпер':
+    case 'Потопельник':
+    case 'Стародавній_Cторож':
+    case 'Зомбі-наїзник':
+    case 'Луска_Краю':
+    case 'Викликач':
+    case 'Гаст':
+    case 'Страж':
+    case 'Хоглін':
+    case 'Кадавр':
+    case 'Лавовий_Куб':
+    case 'Фантом':
+    case 'Жорстокий_Піглін'	:
+    case 'Розбійник':
+    case 'Розорювач':
+    case 'Мешканець-наїзник':
+    case 'Шалкер':
+    case 'Луска':
+    case 'Скелет':
+    case 'Скелет-вершник':
+    case 'Слизень':
+    case 'Скелет-наїзник':
+    case 'Зимогор':
+    case 'Досадник':
+    case 'Поборник':
+    case 'Відьма':
+    case 'Скелет-висушувач':
+    case 'Зоглін':
+    case 'Зомбі':
+    case 'Зомбі-мешканець':
+    case 'Зберігач':
+    result.innerHTML = 'Ворожі моби';
+        break;
+    case 'Свиня':
+    case 'Корова':
+    case 'Курка':
+    case 'Торговець':
+    case 'Летюча_миша':
+    case 'Кішка':
+    case 'Тріска':
+    case 'Віслюк':
+    case 'Лисиця':
+    case 'Кінь':
+    case 'Мул':
+    case 'Папуга':
+    case 'Маленький_піглін':
+    case 'Кролик'	:
+    case 'Вівця':
+    case 'Кінь-скелет':
+    case 'Сніговий_голем':
+    case 'Спрут':
+    case 'Страйдер':
+    case 'Черепаха':
+    case 'Аксолотль':
+    case 'Жаба':
+    case 'Тихоня':
+    result.innerHTML =  'Мирні створіння';
+        break;
+    case 'Бджола':
+    case 'Печерний_Павук':
+    case 'Дельфін':
+    case "Залізний_Голем":
+    case 'Лама':
+    case 'Панда':
+    case 'Піглін':
+    case 'Білий_Ведмідь':
+    case 'Іглобрюх':
+    case 'Павук':
+    case 'Вовк':
+    case 'Зомбіфікований_Піглін':
+    case 'Коза':
+    result.innerHTML = 'Нейтральні моби';
+    break;
+    case 'Агент':
+    case 	'Неігровий_персонаж':
+    result.innerHTML = 'Моби з Education Edition';
+    break;
+    case 'Гігант':
+    case 'Кінь-зомбі':
+    case 'Ілюзор':
+    case 'Кролик-вбивця':
+    result.innerHTML = 'Моби, що не використовуються';
+    break;
+  default:
+  result.innerHTML = 'Сорян. може ти десь помилився з назвою? замість пробілу використовуй _' ;
+    break;
+}
+            }
+</script>
+    </div>
+</body>
+</html>

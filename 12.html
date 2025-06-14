@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12</title>
+    <link  rel="stylesheet" href="body{.css" />
+</head>
+<body>
+     <div class="leftmenu">
+        <a href="1to100.html"><button class="button-87" role="button">1 to 100</button></a>
+        <a href="minemob.html"><button class="button-87" role="button">minemob wiki</button></a>
+        <a href="bakomat.html"><button class="button-87" role="button">bankomat</button></a>
+        <a href="compliments.html"><button class="button-87" role="button">compliments</button></a>
+        <a href="login.html"><button class="button-here" role="button">whats your name</button></a>
+        <a href="stiker.html"><button class="button-87" role="button">stikers</button></a>
+    </div>
+    <div class="content">
+         <a href="index.html">
+        <button class="button-85" role="button" >back</button></a><br /><br />
+        <form name="form1" action="javascript:skoko()">
+            <input type="number" name="skoko" placeholder="номер місяця" style="width: 200px;">
+            <button class="button-85" role="button" >GO</button></a>
+        </form>
+        <div id="result"></div>
+        <script>
+            function skoko(){
+                let result = document.getElementById("result");
+
+                let miesiąc = +document.form1.skoko.value;
+
+                switch(miesiąc.toString()){
+                    case '12':
+                    case '1':
+                    case '2':
+                        result.innerHTML = 'Це зима'
+                        break;
+                    case '3':
+                    case '4':
+                    case '5':
+                        result.innerHTML = 'Весна'
+                        break;
+                    case '6':
+                    case '7':
+                    case '8':
+                        result.innerHTML = 'літо, КАНІКУЛИ'
+                        break;
+                    case '9':
+                    case '10':
+                    case '11':
+                        result.innerHTML = 'Осінь'
+                        break;
+                    default:
+                        result.innerHTML = 'це не місяць'
+                        break;
+
+                }
+                              }
+</script>
+    </div>
+</body>
+</html>

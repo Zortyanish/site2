@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+    <link  rel="stylesheet" href=body{.css />
+</head>
+<body>
+    <div class="leftmenu">
+        <a href="1to100.html"><button class="button-87" role="button">1 to 100</button></a>
+        <a href="12.html"><button class="button-87" role="button">Місяці року</button></a>
+        <a href="minemob.html"><button class="button-87" role="button">minemob wiki</button></a>
+        <a href="bakomat.html"><button class="button-87" role="button">bankomat</button></a>
+        <a href="compliments.html"><button class="button-87" role="button">compliments</button></a>
+        <a href="stiker.html"><button class="button-87" role="button">stikers</button></a>
+    </div>
+    <div class="content">
+        <a href="index.html">
+<button class="button-85" role="button" >back</button></a><br />
+<body><script type="text/javascript">
+    let person = {
+        name: undefined,
+        setName(name){
+            this.name = name;
+            return this;
+        }
+    }
+    function formSubmit() {
+        person.setName(document.person_form.person_name.value);
+        document.getElementById("personName").innerHTML = 'Hello ' + person.name + '!';
+    }
+</script>
+<div class="container">
+
+    <div class="login-box">
+        <h2>Whats your name</h2>
+        <form name="person_form" action="javascript:formSubmit();">
+            <div class="user-box">
+                <input type="text" name="person_name" />
+                <label>Your name</label>
+            </div>
+            <a href="javascript:formSubmit();">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                Submit
+              </a>
+            <div id="personName" style="color: white; margin-top: 20px;"></div>
+        </form>
+      </div>
+
+</body>
+</html>

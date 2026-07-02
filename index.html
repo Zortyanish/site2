@@ -1,29 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-<body>  
-  <header>
-    <div class="bgvideo">
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curse</title>
-    <link  rel="stylesheet" href="body{.css" />
+    <title>Space Guardian: Защита Галактики</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            background-color: #05020a;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; color: white;
+            font-family: 'Arial', sans-serif; user-select: none;
+        }
+        #gameContainer {
+            position: relative;
+            width: 1000px; height: 700px;
+            box-shadow: 0 0 40px rgba(147, 51, 234, 0.4);
+            border-radius: 12px; overflow: hidden;
+        }
+        canvas { display: block; }
+        #ui {
+            position: absolute; top: 35px; left: 95px; right: 95px;
+            display: flex; justify-content: space-between;
+            font-size: 20px; font-weight: bold; pointer-events: none;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+        }
+        #healthBarContainer {
+            width: 168px; height: 16px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 8px; overflow: hidden; margin-top: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #healthBar {
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
+            transition: width 0.1s;
+        }
+        #gameOverScreen {
+            display: none; position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(10, 5, 20, 0.9);
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10;
+        }
+        #restartBtn {
+            padding: 12px 35px; font-size: 18px; background-color: #9333ea;
+            color: white; border: none; border-radius: 25px;
+            cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        #restartBtn:hover { background-color: #a855f7; transform: scale(1.05); }
+    </style>
 </head>
 <body>
-    <div class="leftmenu">
-        <a href="1to100.html"><button class="button-87" role="button">1 to 100</button></a>
-        <a href="12.html"><button class="button-87" role="button">Місяці року</button></a>
-        <a href="minemob.html"><button class="button-87" role="button">minemob wiki</button></a>
-        <a href="bakomat.html"><button class="button-87" role="button">bankomat</button></a>
-        <a href="login.html"><button class="button-here" role="button">whats your name</button></a>
-        <a href="stiker.html"><button class="button-87" role="button">stikers</button></a>
+
+<div id="gameContainer">
+    <div id="ui">
+        <div>Очки: <span id="scoreVal">0</span></div>
+        <div style="text-align: right;">
+            Галактика
+            <div id="healthBarContainer">
+                <div id="healthBar"></div>
+            </div>
+        </div>
     </div>
-    <div class="content">
-<div style="float: left; border-radius: 100%; width: 300px; height: 300px; background-image: url( 
-    ava.png);background-size: 300px; border: orange; 6px; margin: 20px 20px 20px 20px;"></div>
-<giv style="float: left; height: 300px; width: 750px; margin: 20px;"><h2>Привіт! мене звати Андрій, мені 13 років. </h2></giv>
+    
+    <div id="gameOverScreen">
+        <h1 style="color: #ef4444; font-size: 42px; margin-bottom: 25px;">ГАЛАКТИКА РАЗРУШЕНА</h1>
+        <button id="restartBtn" onclick="resetGame()">Заново</button>
+    </div>
+
+    <canvas id="gameCanvas" width="1000" height="700"></canvas>
 </div>
 
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let galaxyHealth = 100;
+let isGameOver = false;
+const keys = { ArrowLeft: false, ArrowRight: false, KeyA: false, KeyD: false, Space: false };
+
+const extensions = ["png", "jpg", "jpeg"];
+let bgImage = new Image();
+let spriteSheet = new Image();
+let bgIndex = 0;
+let spriteIndex = 0;
+let bgLoaded = false;
+let spriteLoaded = false;
+
+function tryLoadBackground() {
+    if (bgIndex >= extensions.length) {
+        bgLoaded = true;
+        checkAllAssets();
+        return;
+    }
+    bgImage = new Image();
+    bgImage.src = "InterFace." + extensions[bgIndex];
+    bgImage.onload = () => { bgLoaded = true; checkAllAssets(); };
+    bgImage.onerror = () => { bgIndex++; tryLoadBackground(); };
+}
+
+function tryLoadSprite() {
+    if (spriteIndex >= extensions.length) {
+        spriteLoaded = true;
+        checkAllAssets();
+        return;
+    }
+    spriteSheet = new Image();
+    spriteSheet.src = "guardian." + extensions[spriteIndex];
+    spriteSheet.onload = () => { spriteLoaded = true; checkAllAssets(); };
+    spriteSheet.onerror = () => { spriteIndex++; tryLoadSprite(); };
+}
+
+tryLoadBackground();
+tryLoadSprite();
+
+let idleFrames = [];
+let attackFrames = [];
+let player = null;
+let beams = [];
+let asteroids = [];
+let stars = [];
+
+const COLS = 5;
+const ROWS = 2;
+let frameWidth = 0;
+let frameHeight = 0;
+
+function checkAllAssets() {
+    if (bgLoaded && spriteLoaded) {
+        frameWidth = spriteSheet.width ? (spriteSheet.width / COLS) : 120;
+        frameHeight = spriteSheet.height ? (spriteSheet.height / ROWS) : 150;
+        
+        idleFrames = [];
+        attackFrames = [];
+
+        for(let i = 0; i < 3; i++) idleFrames.push({x: i * frameWidth, y: 0});
+        
+        attackFrames.push({x: 3 * frameWidth, y: 0});
+        attackFrames.push({x: 4 * frameWidth, y: 0});
+        attackFrames.push({x: 0 * frameWidth, y: frameHeight});
+        attackFrames.push({x: 1 * frameWidth, y: frameHeight});
+        attackFrames.push({x: 2 * frameWidth, y: frameHeight});
+        attackFrames.push({x: 3 * frameWidth, y: frameHeight});
+        attackFrames.push({x: 4 * frameWidth, y: frameHeight});
+
+        init();
+    }
+}
+
+function init() {
+    let scale = 0.65; // Персонаж сделан меньше
+    player = {
+        x: canvas.width / 2 - (frameWidth * scale) / 2,
+        y: canvas.height - (frameHeight * scale) - 55,
+        width: frameWidth * scale,
+        height: frameHeight * scale,
+        speed: 11, 
+        frames: idleFrames,
+        currentFrame: 0,
+        frameTimer: 0,
+        animationSpeed: 0.15,
+        isAttacking: false
+    };
+
+    stars = [];
+    for (let i = 0; i < 60; i++) {
+        stars.push({
+            x: Math.random() * (canvas.width - 200) + 100,
+            y: Math.random() * (canvas.height - 200) + 100,
+            size: Math.random() * 1.5 + 0.5,
+            alpha: Math.random()
+        });
+    }
+
+    beams = []; asteroids = []; score = 0; galaxyHealth = 100; isGameOver = false;
+    document.getElementById("scoreVal").innerText = score;
+    document.getElementById("healthBar").style.width = "100%";
+    document.getElementById("gameOverScreen").style.display = "none";
+
+    gameLoop();
+}
+
+window.addEventListener("keydown", (e) => {
+    if (e.code in keys) keys[e.code] = true;
+    if (e.code === "Space" && player && !player.isAttacking) {
+        shootBeam();
+    }
+});
+
+window.addEventListener("keyup", (e) => { if (e.code in keys) keys[e.code] = false; });
+
+function shootBeam() {
+    player.isAttacking = true;
+    player.frames = attackFrames;
+    player.currentFrame = 0;
+    player.frameTimer = 0;
+
+    beams.push({
+        x: player.x + player.width / 2 - 6,
+        y: player.y + 10,
+        width: 12,
+        height: 60,
+        speed: 18 
+    });
+}
+
+function spawnAsteroid() {
+    // МАКСИМУМ 2 МЕТЕОРИТА НА ЭКРАНЕ
+    if (asteroids.length >= 2) return;
+
+    if (Math.random() < 0.025) {
+        // МЕТЕОРИТЫ СТАЛИ БОЛЬШЕ (радиус увеличен)
+        let radius = Math.random() * 15 + 40;
+        let jaggedPoints = [];
+        let pointsCount = 10 + Math.floor(Math.random() * 5);
+        for(let i = 0; i < pointsCount; i++) {
+            jaggedPoints.push(0.85 + Math.random() * 0.25);
+        }
+
+        asteroids.push({
+            x: Math.random() * (canvas.width - 280) + 140,
+            y: -60,
+            radius: radius,
+            speed: Math.random() * 1.0 + 1.8, 
+            points: jaggedPoints,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.02
+        });
+    }
+}
+
+function gameLoop() {
+    if (isGameOver) return;
+
+    // Отрисовка фона
+    if (bgImage.complete && bgImage.width > 0) {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = "#0a0314";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#a855f7";
+        ctx.lineWidth = 6;
+        ctx.strokeRect(85, 40, canvas.width - 170, canvas.height - 110);
+    }
+
+    ctx.fillStyle = "white";
+    stars.forEach(star => {
+        star.alpha += (Math.random() - 0.5) * 0.08;
+        if(star.alpha < 0.1) star.alpha = 0.1;
+        if(star.alpha > 1) star.alpha = 1;
+        ctx.globalAlpha = star.alpha;
+        ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    if (keys.ArrowLeft || keys.KeyA) player.x -= player.speed;
+    if (keys.ArrowRight || keys.KeyD) player.x += player.speed;
+
+    if (player.x < 85) player.x = 85;
+    if (player.x > canvas.width - player.width - 85) player.x = canvas.width - player.width - 85;
+
+    player.frameTimer += player.animationSpeed;
+    if (player.frameTimer >= player.frames.length) {
+        player.frameTimer = 0;
+        if (player.isAttacking) { player.isAttacking = false; player.frames = idleFrames; }
+    }
+    player.currentFrame = Math.floor(player.frameTimer);
+
+    let currentCut = player.frames[player.currentFrame];
+    if(currentCut && spriteSheet.complete && spriteSheet.width > 0) {
+        ctx.drawImage(
+            spriteSheet,
+            currentCut.x, currentCut.y, frameWidth, frameHeight,
+            player.x, player.y, player.width, player.height
+        );
+    } else {
+        // Красивый резервный неоновый маг, если файл не подгрузился
+        ctx.save();
+        ctx.fillStyle = "rgba(168, 85, 247, 0.3)";
+        ctx.strokeStyle = "#c084fc";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
+        ctx.fillRect(player.x + 10, player.y, player.width - 20, player.height);
+        ctx.strokeRect(player.x + 10, player.y, player.width - 20, player.height);
+        ctx.restore();
+    }
+
+    for (let i = beams.length - 1; i >= 0; i--) {
+        let b = beams[i]; b.y -= b.speed;
+        let gradient = ctx.createLinearGradient(b.x, b.y, b.x + b.width, b.y);
+        gradient.addColorStop(0, "rgba(168, 85, 247, 1)");
+        gradient.addColorStop(0.5, "white");
+        gradient.addColorStop(1, "rgba(168, 85, 247, 1)");
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 15; ctx.shadowColor = "#a855f7";
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+        ctx.shadowBlur = 0;
+        if (b.y + b.height < 90) beams.splice(i, 1);
+    }
+
+    spawnAsteroid();
+    for (let i = asteroids.length - 1; i >= 0; i--) {
+        let a = asteroids[i]; a.y += a.speed; a.rotation += a.rotSpeed;
+
+        let tailGrad = ctx.createLinearGradient(a.x, a.y, a.x, a.y - a.radius * 2.2);
+        tailGrad.addColorStop(0, "rgba(239, 68, 68, 0.8)");
+        tailGrad.addColorStop(0.4, "rgba(234, 179, 8, 0.4)");
+        tailGrad.addColorStop(1, "rgba(239, 68, 68, 0)");
+        ctx.fillStyle = tailGrad;
+        ctx.beginPath(); ctx.moveTo(a.x - a.radius * 0.7, a.y); ctx.lineTo(a.x, a.y - a.radius * 2.2); ctx.lineTo(a.x + a.radius * 0.7, a.y); ctx.closePath(); ctx.fill();
+
+        ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.rotation);
+        let rockGrad = ctx.createRadialGradient(-a.radius*0.3, -a.radius*0.3, a.radius*0.1, 0, 0, a.radius);
+        rockGrad.addColorStop(0, "#574275"); rockGrad.addColorStop(0.6, "#2d1b4e"); rockGrad.addColorStop(1, "#170b2e");
+        ctx.fillStyle = rockGrad; ctx.strokeStyle = "#8b5cf6"; ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        for(let p = 0; p < a.points.length; p++) {
+            let angle = (p / a.points.length) * Math.PI * 2;
+            let r = a.radius * a.points[p];
+            if(p === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        if (a.y - a.radius > canvas.height - 100) {
+            galaxyHealth -= 10;
+            document.getElementById("healthBar").style.width = Math.max(0, galaxyHealth) + "%";
+            asteroids.splice(i, 1);
+            if (galaxyHealth <= 0) endGame();
+            continue;
+        }
+
+        for (let j = beams.length - 1; j >= 0; j--) {
+            let b = beams[j];
+            if (b.x < a.x + a.radius && b.x + b.width > a.x - a.radius && b.y < a.y + a.radius && b.y + b.height > a.y - a.radius) {
+                ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(a.x, a.y, a.radius * 1.4, 0, Math.PI * 2); ctx.fill();
+                asteroids.splice(i, 1); beams.splice(j, 1);
+                score += 10; document.getElementById("scoreVal").innerText = score;
+                break;
+            }
+        }
+    }
+    requestAnimationFrame(gameLoop);
+}
+
+function endGame() { isGameOver = true; document.getElementById("gameOverScreen").style.display = "flex"; }
+function resetGame() { init(); }
+</script>
 </body>
 </html>
